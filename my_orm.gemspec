@@ -5,7 +5,7 @@ require_relative "lib/my_orm/version"
 Gem::Specification.new do |spec|
   spec.name = "my_orm"
   spec.version = MyOrm::VERSION
-  spec.authors = ["shmvsky"]
+  spec.authors = ["shmvsky","viaznikov"]
 
   spec.summary = "Реализация ORM в Ruby"
   spec.license = "MIT"
@@ -18,5 +18,7 @@ Gem::Specification.new do |spec|
     end
   end
   spec.require_paths = ["lib"]
+  spec.add_dependency "zeitwerk", "~> 2.6"
+  spec.add_dependency "sqlite3", "~> 1.3", ">= 1.3.11"
 
 end
