@@ -1,7 +1,7 @@
 require "sqlite3"
 
 module MyOrm
-    class DataBase
+    class Database
         def self.connection(db_name)
             @db = SQLite3::Database.new db_name
         end

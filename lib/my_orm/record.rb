@@ -1,10 +1,10 @@
 module MyOrm
-    class ClassMethods
+  class Record
         attr_accessor :table_name
 
          def self.read_the_table
-            info_about_columns = DataBase.request("PRAGMA table_info(#{self.to_s})")
-            info_about_rows = DataBase.request("select * from #{self}")
+            info_about_columns = Database.request("PRAGMA table_info(#{self.to_s})")
+            info_about_rows = Database.request("select * from #{self}")
             meta_create(self,info_about_columns,info_about_rows)
          end
 
@@ -36,8 +36,7 @@ module MyOrm
                 instance.instance_variable_set("@#{field_names[i]}",row[i])
             end
          end
-         
-    end
+
+  end
 
 end
-
