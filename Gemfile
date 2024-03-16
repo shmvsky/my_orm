@@ -12,8 +12,6 @@ gem "rubocop", "~> 1.21"
 
 gem "activerecord", "~> 7.1"
 
-gem "pg", "~> 1.5"
-
 gem "zeitwerk", "~> 2.6"
 
-gem "sqlite3", "~> 1.3", ">= 1.3.11"
+gem "sqlite3", "~> 1.3"

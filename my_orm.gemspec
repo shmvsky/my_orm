@@ -4,7 +4,7 @@ require_relative "lib/my_orm/version"
 
 Gem::Specification.new do |spec|
   spec.name = "my_orm"
-  spec.version = MyOrm::VERSION
+  spec.version = My_Orm::VERSION
   spec.authors = ["shmvsky","viaznikov"]
 
   spec.summary = "Реализация ORM в Ruby"

@@ -1,8 +1,3 @@
-
-# require "zeitwerk"
-# loader = Zeitwerk::Loader.for_gem
-# loader.setup
-
 require_relative 'my_orm/database.rb'
 require_relative 'my_orm/version.rb'
 require_relative "my_orm/class_methods.rb"
