@@ -5,4 +5,4 @@ require "my_orm"
 
 require "minitest/autorun"
 
-require_relative "my_orm\lib\my_orm\database"
+require_relative "../lib/my_orm/database"

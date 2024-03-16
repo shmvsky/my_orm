@@ -1,6 +1,6 @@
 require "sqlite3"
 
-module My_Orm
+module MyOrm
     class DataBase
         def self.connection(db_name)
             @db = SQLite3::Database.new db_name

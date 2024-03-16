@@ -12,6 +12,4 @@ gem "rubocop", "~> 1.21"
 
 gem "activerecord", "~> 7.1"
 
-gem "zeitwerk", "~> 2.6"
-
 gem "sqlite3", "~> 1.3"

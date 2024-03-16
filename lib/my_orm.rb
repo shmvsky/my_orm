@@ -4,14 +4,19 @@ require_relative "my_orm/class_methods.rb"
 
 
 
-My_Orm::DataBase.connection("test_db.db")
-
-
-class Users < My_Orm::Class_Methods
-
+module MyOrm
+  class Error < StandardError; end
+  # Your code goes here...
 end
 
-Users.read_the_table
-a = Users.new
-puts Users.instances.inspect
+# My_Orm::DataBase.connection("test_db.db")
+
+
+# class Users < My_Orm::Class_Methods
+#
+# end
+
+# Users.read_the_table
+# a = Users.new
+# puts Users.instances.inspect
 
