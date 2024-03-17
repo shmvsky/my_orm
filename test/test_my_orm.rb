@@ -11,12 +11,4 @@ class TestMyOrm < Minitest::Test
     assert true
   end
 
-
-  # def test_that_it_creats_a_database
-  #   obj = SQlite3::Database.new
-  #   obj1 = MyOrm::DataBase.connection(test_db.db)
-  #
-  #   assert obj.class,obj1.class
-  #
-  # end
 end

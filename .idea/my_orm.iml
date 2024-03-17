@@ -58,14 +58,6 @@
             </subtasks>
           </RakeTaskImpl>
           <RakeTaskImpl description="Create tag v0.1.0 and build and push my_orm-0.1.0.gem to rubygems.org" fullCommand="release[remote]" id="release[remote]" />
-          <RakeTaskImpl description="Run RuboCop" fullCommand="rubocop" id="rubocop" />
-          <RakeTaskImpl id="rubocop">
-            <subtasks>
-              <RakeTaskImpl description="Autocorrect RuboCop offenses (only when it's safe)" fullCommand="rubocop:autocorrect" id="autocorrect" />
-              <RakeTaskImpl description="Autocorrect RuboCop offenses (safe and unsafe)" fullCommand="rubocop:autocorrect_all" id="autocorrect_all" />
-              <RakeTaskImpl description="" fullCommand="rubocop:auto_correct" id="auto_correct" />
-            </subtasks>
-          </RakeTaskImpl>
           <RakeTaskImpl description="Run tests" fullCommand="test" id="test" />
           <RakeTaskImpl description="" fullCommand="default" id="default" />
           <RakeTaskImpl description="" fullCommand="release" id="release" />

@@ -4,5 +4,3 @@ $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "my_orm"
 
 require "minitest/autorun"
-
-require_relative "../lib/my_orm/database"
