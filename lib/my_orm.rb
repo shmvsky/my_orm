@@ -1,5 +1,3 @@
 require_relative 'my_orm/version.rb'
-require_relative 'my_orm/connection'
-require_relative 'my_orm/class_methods'
 require_relative 'my_orm/record'
-require_relative 'my_orm/configuration'
+require_relative 'my_orm/connection'

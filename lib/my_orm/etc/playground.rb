@@ -1,30 +1,45 @@
 require_relative '../../my_orm'
 
-# MyOrm::Configuration.establish_connection("../../../data/test.db")
-#
-# class MyRecord < MyOrm::Record
-#
-# end
-#
-# myRecord = MyRecord.new
-# myRecord.save
-# myRecord.update
-# myRecord.search
-# myRecord.delete
+#================1=================
+module M
+  @@f = "1"
+  def self.foo
+    @@f = "2"
+  end
 
-module T
-
-  def aboba
-    @field = 228
+  def self.bar
+    puts @@f
   end
 
 end
 
-class C
+M.bar
+M.foo
+M.bar
+#==================================
 
-  include T
 
+
+#================2=================
+module ClashOfClans
+  module GoldMine
+    def self.mine_some_gold
+      puts 'do mining'
+    end
+  end
+  class Village
+
+    def self.collect_gold
+      GoldMine.mine_some_gold
+    end
+  end
 end
 
-c = C.new
-c.aboba
+ClashOfClans::Village.collect_gold
+#==================================
+
+#================3=================
+puts MyOrm::Connection.connected?
+MyOrm::Connection.establish_connection("test.db")
+puts MyOrm::Connection.connected?
+#==================================
