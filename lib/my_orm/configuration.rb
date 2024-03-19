@@ -16,7 +16,7 @@ module MyOrm
         def initialize_the_fields
             class_variable_set(:@@columns, {})
         end
-        # initialize_the_getter - метод, создающией геттер для статического поля columns 
+        # initialize_the_getter - метод, создающией геттер для статического поля columns
         def initialize_the_getter
             define_singleton_method :columns do
                 class_variable_get(:@@columns)

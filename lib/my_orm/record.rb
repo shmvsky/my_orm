@@ -4,7 +4,7 @@ require_relative 'connection'
 module MyOrm
   # Record - содержит реализации основных методов для работы с бд: create, where, update, delete
   class Record
-  extend Configuration
+    extend Configuration
     # Класс, делающий методы create_where
     class << self
       # create - метод, создающий строку в бд с задаными параметрами
