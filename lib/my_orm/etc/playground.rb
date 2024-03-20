@@ -1,27 +1,87 @@
-# require_relative '../../my_orm'
-require 'active_record'
-require 'sqlite3'
+require_relative '../../my_orm'
+# require 'active_record'
+# require 'sqlite3'
 
-require_relative 'student'
+#==================================
 
-MyOrm::Student.connect_to_database
-MyOrm::Student.populate_table
+MyOrm::Record.establish_connection ':memory:'
 
-stud = MyOrm::Student.new
-stud.id = 228
-stud.name = 'Penis'
-stud.surname = 'Cock'
-stud.yr = 5
+MyOrm::Record.populate_students
 
-stud.save
+MyOrm::Record.show_students
 
-stud.name = 'Suka'
-stud.surname = 'Pidor'
-stud.yr = 1
+class Student < MyOrm::Record
+end
 
-stud.save
+student = Student.new
 
-MyOrm::Student.show_table_data
+student.id = 228
+student.name = 'Шостик'
+student.surname = 'Хвостик'
+student.yr = 1
+
+student.save
+
+student.name = 'Илюшка'
+student.surname = 'Хрюшка'
+student.yr = 1
+
+student.save
+
+puts "======================="
+MyOrm::Record.show_students
+
+# student.instance_variable_set(:@id, 228)
+# student.instance_variable_set(:@name, 'Попка')
+# student.instance_variable_set(:@surname, 'Крутая')
+# student.instance_variable_set(:@yr, 4)
+#
+# student.instance_variables.each do |var|
+#   puts "#{var}: #{student.instance_variable_get(var)}"
+# end
+
+# class B
+#
+#   def self.benis
+#     @@b = 'hello'
+#   end
+#
+#   def b
+#     @@b
+#   end
+#
+#   def k
+#     B.benis
+#   end
+#
+# end
+#
+# bb = B.new
+# bb.k
+# puts bb.b
+
+# #================7=================
+# require_relative 'student'
+#
+# MyOrm::Student.connect_to_database
+# MyOrm::Student.populate_table
+#
+# stud = MyOrm::Student.new
+# stud.id = 228
+# stud.name = 'Penis'
+# stud.surname = 'Cock'
+# stud.yr = 5
+#
+# stud.save
+#
+# stud.name = 'Suka'
+# stud.surname = 'Pidor'
+# stud.yr = 1
+#
+# stud.save
+#
+# MyOrm::Student.show_table_data
+# #==================================
 
 #================1=================
 # module M
