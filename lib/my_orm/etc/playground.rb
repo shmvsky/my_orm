@@ -1,6 +1,87 @@
-# require_relative '../../my_orm'
-require 'active_record'
-require 'sqlite3'
+require_relative '../../my_orm'
+# require 'active_record'
+# require 'sqlite3'
+
+#==================================
+
+MyOrm::Record.establish_connection ':memory:'
+
+MyOrm::Record.populate_students
+
+MyOrm::Record.show_students
+
+class Student < MyOrm::Record
+end
+
+student = Student.new
+
+student.id = 228
+student.name = 'Шостик'
+student.surname = 'Хвостик'
+student.yr = 1
+
+student.save
+
+student.name = 'Илюшка'
+student.surname = 'Хрюшка'
+student.yr = 1
+
+student.save
+
+puts "======================="
+MyOrm::Record.show_students
+
+# student.instance_variable_set(:@id, 228)
+# student.instance_variable_set(:@name, 'Попка')
+# student.instance_variable_set(:@surname, 'Крутая')
+# student.instance_variable_set(:@yr, 4)
+#
+# student.instance_variables.each do |var|
+#   puts "#{var}: #{student.instance_variable_get(var)}"
+# end
+
+# class B
+#
+#   def self.benis
+#     @@b = 'hello'
+#   end
+#
+#   def b
+#     @@b
+#   end
+#
+#   def k
+#     B.benis
+#   end
+#
+# end
+#
+# bb = B.new
+# bb.k
+# puts bb.b
+
+# #================7=================
+# require_relative 'student'
+#
+# MyOrm::Student.connect_to_database
+# MyOrm::Student.populate_table
+#
+# stud = MyOrm::Student.new
+# stud.id = 228
+# stud.name = 'Penis'
+# stud.surname = 'Cock'
+# stud.yr = 5
+#
+# stud.save
+#
+# stud.name = 'Suka'
+# stud.surname = 'Pidor'
+# stud.yr = 1
+#
+# stud.save
+#
+# MyOrm::Student.show_table_data
+# #==================================
 
 #================1=================
 # module M
@@ -59,78 +140,3 @@ require 'sqlite3'
 #
 # puts Users.columns.inspect
 #==================================
-
-# ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => ':mem:')
-
-module MyOrm
-  class Student
-    @@table_name = 'students'
-    @@pk = 'id'
-
-    attr_accessor :id, :name, :surname, :yr
-
-    def save(db)
-      columns = ""
-      values = ""
-
-      instance_variables.each do |k|
-        col_name = k.to_s.delete('@')
-        if col_name != @@pk
-          columns += "#{col_name}, "
-          v = instance_variable_get(k)
-          if v.is_a? String || v.is_a? == Symbol
-            values += "'#{v}', "
-          elsif v.is_a? Numeric
-            values += "#{v}, "
-          else
-            raise 'Cast exception!'
-          end
-        end
-
-      end
-
-      query = "INSERT INTO #{@@table_name} (#{columns[0...-2]}) VALUES (#{values[0...-2]})"
-
-      db.execute(query)
-    end
-
-    def self.where
-      puts 'searching'
-    end
-
-    def update
-      puts 'updating'
-    end
-
-    def delete
-      puts 'deleting'
-    end
-  end
-end
-
-db = SQLite3::Database.new ':memory:'
-
-begin
-  db.transaction
-  db.execute("CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY AUTOINCREMENT, name text NOT NULL, surname text NOT NULL, yr INTEGER NOT NULL);")
-  db.execute("INSERT INTO students (name, surname, yr) VALUES ('Константин', 'Шумовский', 3);")
-  db.execute("INSERT INTO students (name, surname, yr) VALUES ('Илья', 'Вязников', 3);")
-  db.commit
-rescue SQLite::Exception
-  db.rollback
-end
-
-
-stud = MyOrm::Student.new
-stud.id = 228
-stud.name = 'Penis'
-stud.surname = 'Cock'
-stud.yr = 5
-
-stud.save db
-
-db.execute("SELECT * FROM students").each do |row|
-  puts row.to_s
-end
-
-db.close
