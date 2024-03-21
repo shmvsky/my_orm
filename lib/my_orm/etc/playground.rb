@@ -13,20 +13,14 @@ MyOrm::Record.show_students
 class Student < MyOrm::Record
 end
 
-student = Student.new
+stud = Student.new 
 
-student.id = 228
-student.name = 'Шостик'
-student.surname = 'Хвостик'
-student.yr = 1
+stud.name = "KocT9"
+stud.surname = "shum"
+stud.yr = 2
 
-student.save
+stud.save
 
-student.name = 'Илюшка'
-student.surname = 'Хрюшка'
-student.yr = 1
-
-student.save
 
 puts "======================="
 MyOrm::Record.show_students

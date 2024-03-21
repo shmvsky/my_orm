@@ -15,14 +15,17 @@ end
 
 module MyOrm
   class Record
-
+    @@flag = true
     def self.establish_connection db
       @@db = SQLite3::Database.new db
     end
 
     def initialize
       if Record.connected?
-        load_fields
+        if @@flag
+          load_fields
+          @@flag = false
+        end
       else
         raise 'do connect!!!!'
       end
@@ -41,39 +44,45 @@ module MyOrm
       #ПОЛУЧАЕМ ИНФУ О ТАБЛИЦЕ
       table_info = @@db.execute("PRAGMA table_info(#{self.class.class_variable_get("@@table_name")})")
 
+      #СОЗДАЕМ СЛУЖЕБНОЕ ПОЛЕ С ИНФОРМАЦИЕЙ О СТОЛБЦАХ {NAME:[INFO1,INFO2..],...}
+      self.class.class_variable_set(:@@column_info,{})
+
+      self.class.define_singleton_method :column_info do 
+        self.class_variable_get(:@@column_info)
+      end
+
+      table_info.each do |col_info|
+        col_name = col_info[1]
+        self.class.column_info.merge!({col_name.to_sym => col_info})
+      end
+
       #ВЫВОДИМ ИНФУ О ТАБЛИЦЕ ДЕБАГА РАДИ
       puts table_info.to_s
 
       #ПЕРЕБИРАЕМ ИНФУ О КОЛОНКАХ ТАБЛИЦЫ
       table_info.each do |col_info|
         col_name = col_info[1]
-        not_pk = col_info[3]
-
-        #ОПРЕДЕЛЯЕМ НАШ ПЕРВИЧНЫЙ КЛЮЧИК КАК ПЕРЕМЕННУЮ КЛАССА
-        if not_pk.zero?
-          self.class.class_variable_set("@@primary_key", col_name)
-        end
 
         #ХУЯРИМ ПЕРЕМЕННЫЕ ОБЪЕКТА
-        self.instance_variable_set("@#{col_name}", nil)
+        self.class.instance_variable_set("@#{col_name}", nil)
 
         #ХУЯРИМ ГЕТТЕРЫ
-        self.define_singleton_method :"#{col_name}" do ||
+        self.class.define_method :"#{col_name}" do
           self.instance_variable_get("@#{col_name}")
         end
 
         #ХУЯРИМ СЕТТЕРЫ
-        self.define_singleton_method :"#{col_name}=" do |value|
+        self.class.define_method :"#{col_name}=" do |value|
           self.instance_variable_set("@#{col_name}", value)
         end
 
       end
 
       #ОПЯТЬ ДЕБАГ. ВЫВОДИМ СПИСОК ПЕРЕМЕННЫХ И МЕТДОВ ОБЪЕКТА И КЛАССА
-      puts self.instance_variables.to_s
-      puts self.singleton_methods.to_s
-      puts self.class.class_variables.to_s
-      puts self.class.methods.to_s
+      # puts self.instance_variables.to_s
+      # puts self.singleton_methods.to_s
+      # puts self.class.class_variables.to_s
+      # puts self.class.methods(false).to_s
 
     end
 
@@ -83,7 +92,7 @@ module MyOrm
 
       instance_variables.each do |k|
         col_name = k.to_s.delete('@')
-        if col_name != self.class.class_variable_get("@@primary_key")
+        if col_name != self.class.column_info[:"#{col_name}"][-1]
           columns += "#{col_name}, "
           v = instance_variable_get(k)
           if v.is_a? String || v.is_a? == Symbol
