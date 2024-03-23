@@ -15,87 +15,18 @@ end
 
 module MyOrm
   class Record
-    @@flag = true
-    def self.establish_connection db
-      @@db = SQLite3::Database.new db
-    end
-
-    def initialize
-      if Record.connected?
-        if @@flag
-          load_fields
-          @@flag = false
-        end
-      else
-        raise 'do connect!!!!'
-      end
-    end
-
-    def self.connected?
-      if defined? @@db
-        true
-      end
-    end
-
-    def load_fields
-      #В КЛАССЕ БУДЕТ ХРАНИТЬСЯ НАЗВАНИЕ ТАБЛИЦЫ, К КОТОРОЙ ОН ОТНОСИТСЯ
-      self.class.class_variable_set("@@table_name", self.class.to_s.underscore + 's')
-
-      #ПОЛУЧАЕМ ИНФУ О ТАБЛИЦЕ
-      table_info = @@db.execute("PRAGMA table_info(#{self.class.class_variable_get("@@table_name")})")
-
-      #СОЗДАЕМ СЛУЖЕБНОЕ ПОЛЕ С ИНФОРМАЦИЕЙ О СТОЛБЦАХ {NAME:[INFO1,INFO2..],...}
-      self.class.class_variable_set(:@@column_info,{})
-
-      self.class.define_singleton_method :column_info do 
-        self.class_variable_get(:@@column_info)
-      end
-
-      table_info.each do |col_info|
-        col_name = col_info[1]
-        self.class.column_info.merge!({col_name.to_sym => col_info})
-      end
-
-      #ВЫВОДИМ ИНФУ О ТАБЛИЦЕ ДЕБАГА РАДИ
-      puts table_info.to_s
-
-      #ПЕРЕБИРАЕМ ИНФУ О КОЛОНКАХ ТАБЛИЦЫ
-      table_info.each do |col_info|
-        col_name = col_info[1]
-
-        #ХУЯРИМ ПЕРЕМЕННЫЕ ОБЪЕКТА
-        self.class.instance_variable_set("@#{col_name}", nil)
-
-        #ХУЯРИМ ГЕТТЕРЫ
-        self.class.define_method :"#{col_name}" do
-          self.instance_variable_get("@#{col_name}")
-        end
-
-        #ХУЯРИМ СЕТТЕРЫ
-        self.class.define_method :"#{col_name}=" do |value|
-          self.instance_variable_set("@#{col_name}", value)
-        end
-
-      end
-
-      #ОПЯТЬ ДЕБАГ. ВЫВОДИМ СПИСОК ПЕРЕМЕННЫХ И МЕТДОВ ОБЪЕКТА И КЛАССА
-      # puts self.instance_variables.to_s
-      # puts self.singleton_methods.to_s
-      # puts self.class.class_variables.to_s
-      # puts self.class.methods(false).to_s
-
-    end
+    extend Configuration
+    extend Connection
 
     def save
       columns = ""
       values = ""
-
-      instance_variables.each do |k|
-        col_name = k.to_s.delete('@')
-        if col_name != self.class.column_info[:"#{col_name}"][-1]
+      unless @is_saved
+        instance_variables.each do |k|
+          col_name = k.to_s.delete('@')
           columns += "#{col_name}, "
           v = instance_variable_get(k)
-          if v.is_a? String || v.is_a? == Symbol
+          if v.is_a?(String) || v.is_a?(Symbol)
             values += "'#{v}', "
           elsif v.is_a? Numeric
             values += "#{v}, "
@@ -104,24 +35,56 @@ module MyOrm
           end
         end
 
+        query = "INSERT INTO #{self.class.class_variable_get("@@table_name")} (#{columns[0...-2]}) VALUES (#{values[0...-2]})"
+        @is_saved = true
+      else
+        where_str = ''
+        instance_variables.reject{|x| x == :@is_saved}.each do |k|
+          col_name = k.to_s.delete('@')
+          v = instance_variable_get(k)
+          puts self.class.column_info[:"#{k}"].inspect
+          if self.class.column_info[k][-1] != 0
+            where_str += "#{col_name} = #{instance_variable_get(k)} AND"
+          elsif v.is_a?(String)
+            columns += "#{col_name} = '#{v}', "
+          elsif v.is_a?(Numeric)
+           # puts "VVV #{v}"
+            columns += "#{col_name} = #{v}, "
+          else 
+            puts "ERROR #{k} VAL: #{v}"
+            raise 'Cast exception!'
+          end # Добавленный end
+          #puts columns
+   
+        end
+        query = "UPDATE #{self.class.class_variable_get("@@table_name")} SET #{columns[0...-2]} WHERE #{where_str[0...-4]}"
       end
-
-      query = "INSERT INTO #{self.class.class_variable_get("@@table_name")} (#{columns[0...-2]}) VALUES (#{values[0...-2]})"
 
       puts query
 
-      @@db.execute(query)
+      Connection.execute(query)
+      if @is_saved
+        # повторно объявить инициализацию pk
+        identification = MyOrm::Connection.execute "SELECT last_insert_rowid();"
+        row_info = Connection.execute("SELECT * FROM #{self.class.class_variable_get(:@@table_name)} WHERE rowid = #{identification[0][0]};")
+        pks = self.class.column_info.select{|col,info| info[-1] != 0}
+        #puts "PKS :#{pks}"
+        pks.each_key do |col| i = 0
+          instance_variable_set(col,row_info[0][i])
+          i += 1
+        end
+      end
     end
 
     def self.populate_students
-      @@db.execute("CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY AUTOINCREMENT, name text NOT NULL, surname text NOT NULL, yr INTEGER NOT NULL);")
-      @@db.execute("INSERT INTO students (name, surname, yr) VALUES ('Константин', 'Шумовский', 3);")
-      @@db.execute("INSERT INTO students (name, surname, yr) VALUES ('Илья', 'Вязников', 3);")
+      Connection.execute("CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY AUTOINCREMENT, name text NOT NULL, surname text NOT NULL, yr INTEGER NOT NULL);")
+      Connection.execute("INSERT INTO students (name, surname, yr) VALUES ('Константин', 'Шумовский', 3);")
+      Connection.execute("INSERT INTO students (name, surname, yr) VALUES ('Илья', 'Вязников', 3);")
     end
 
     def self.show_students
-      @@db.execute("SELECT * FROM students").each do |row|
-        puts row.to_s
+      Connection.execute("SELECT * FROM students").each do |row|
+        puts row.inspect
       end
     end
 

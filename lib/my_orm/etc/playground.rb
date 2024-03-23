@@ -4,7 +4,7 @@ require_relative '../../my_orm'
 
 #==================================
 
-MyOrm::Record.establish_connection ':memory:'
+MyOrm::Connection.establish_connection ':memory:'
 
 MyOrm::Record.populate_students
 
@@ -13,13 +13,49 @@ MyOrm::Record.show_students
 class Student < MyOrm::Record
 end
 
+
 stud = Student.new 
 
-stud.name = "KocT9"
-stud.surname = "shum"
-stud.yr = 2
+
+stud.name = "gon"
+stud.surname = "don"
+stud.yr = 52
 
 stud.save
+
+stud.name = "ppp"
+
+stud.save
+
+stud1 = Student.new
+
+stud1.name = "PEPO"
+stud1.surname = "PEPO"
+stud1.yr = 51
+stud1.id = 11
+
+stud1.save
+
+stud2 = Student.new
+
+stud2.name = "KEKO"
+stud2.surname = "KEKO"
+stud2.yr = 51
+stud2.id = 32
+
+stud2.save
+
+puts "======================="
+MyOrm::Record.show_students
+
+stud1.name ="andruha"
+stud1.surname = "kosygin"
+stud1.save
+
+
+
+
+
 
 
 puts "======================="
