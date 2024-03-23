@@ -18,6 +18,26 @@ module MyOrm
     extend Configuration
     extend Connection
 
+    class << self
+      def create(**args)
+        obj = new
+        args.each do |col,val|
+          columns = :"@#{col}"
+          obj.instance_variable_set(columns,val)
+        end
+        obj.save
+      end
+
+    end
+
+    def update(**args)
+        args.each do |col,val|
+          columns = :"@#{col}"
+          instance_variable_set(columns,val)
+        end
+        save
+    end
+
     def save
       columns = ""
       values = ""
@@ -42,7 +62,6 @@ module MyOrm
         instance_variables.reject{|x| x == :@is_saved}.each do |k|
           col_name = k.to_s.delete('@')
           v = instance_variable_get(k)
-          puts self.class.column_info[:"#{k}"].inspect
           if self.class.column_info[k][-1] != 0
             where_str += "#{col_name} = #{instance_variable_get(k)} AND"
           elsif v.is_a?(String)
@@ -74,6 +93,7 @@ module MyOrm
           i += 1
         end
       end
+      self
     end
 
     def self.populate_students
