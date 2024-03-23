@@ -18,7 +18,7 @@ stud = Student.create(name:"NIKITOS",yr:12,surname:"KEKE",id: 21)
 puts "======================="
 MyOrm::Record.show_students
 
-stud.update(name:"PIPE",id:521)
+stud.delete
 
 # stud = Student.new 
 

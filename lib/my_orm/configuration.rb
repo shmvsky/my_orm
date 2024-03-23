@@ -16,6 +16,10 @@ module MyOrm
             #В КЛАССЕ БУДЕТ ХРАНИТЬСЯ НАЗВАНИЕ ТАБЛИЦЫ, К КОТОРОЙ ОН ОТНОСИТСЯ
             class_variable_set(:@@table_name, self.to_s.underscore + 's')
 
+            define_singleton_method :table_name do 
+                class_variable_get(:@@table_name)
+            end
+
             #ПОЛУЧАЕМ ИНФУ О ТАБЛИЦЕ
             table_info = Connection.execute("PRAGMA table_info(#{class_variable_get("@@table_name")})")
 
