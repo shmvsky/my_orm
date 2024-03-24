@@ -7,4 +7,7 @@ module MyOrm
   end
 
   class PopulateException < Exception; end
+
+  class ConnectionException < Exception; end
+
 end
