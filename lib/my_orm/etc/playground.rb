@@ -8,17 +8,17 @@ MyOrm::Connection.establish_connection ':memory:'
 
 MyOrm::Record.populate_students
 
-MyOrm::Record.show_students
+# MyOrm::Record.show_students
 
 class Student < MyOrm::Record
 end
 
 
-stud = Student.create(name:"NIKITOS",yr:12,surname:"KEKE",id: 21)
-puts "======================="
-MyOrm::Record.show_students
 
-stud.delete
+stud = Student.create(name:"NIK",surname:"POK",yr:52,id:42,pp:23)
+
+Student.where('? >= 2', 'id')
+
 
 # stud = Student.new 
 

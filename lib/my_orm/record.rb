@@ -28,14 +28,21 @@ module MyOrm
         obj.save
       end
 
+      # def where(conditions,*param)
+      #   conditions.sub!(/\?/, param.shift) while conditions.include? '?'
+
+      #   query = "SELECT * from #{table_name} WHERE #{conditions};"
+
+      #   rows = Connection.execute(query)
+
+      #   instances = rows.inject([]){|res,row| res << row}
+      # end 
 
       def delete(**args)
-        set_of_keys = Set.new args.map{|col,val| col}
-        set_of_primary_keys = Set.new column_info.select{|col,info| info[-1] != 0}.keys.map{|col| col.to_s.delete('@').to_sym}
+        set_of_keys = Set.new(args.keys)
+        set_of_primary_keys = Set.new(column_info.reject{ |_, info| info[-1].zero? }.keys.map{ |col| col.to_s.delete('@').to_sym })
 
-        if set_of_keys != set_of_primary_keys
-          raise 'Not a primary keys'
-        end
+        raise 'Not a primary keys' if set_of_keys != set_of_primary_keys
 
         where_str = ''
 
@@ -46,13 +53,12 @@ module MyOrm
         query = "DELETE FROM #{table_name} WHERE " + where_str[0...-5]
 
         Connection.execute(query)
-
       end
     end
 
     define_method :delete do
-      args = self.class.column_info.select{|col,info| info[-1] != 0}.inject({}){|res,hash| res.merge({hash[0].to_s.delete('@').to_sym => instance_variable_get(hash[0])})}
-      puts args.inspect
+      args = self.class.column_info.reject{ |_,info| info[-1].zero? }
+      args = args.inject({}) { |res, hash| res.merge({ hash[0].to_s.delete('@').to_sym => instance_variable_get(hash[0]) })}
       self.class.delete(**args)
     end
 
@@ -65,67 +71,84 @@ module MyOrm
     end
 
     def save
-      columns = ""
-      values = ""
-      unless @is_saved
-        instance_variables.each do |k|
-          col_name = k.to_s.delete('@')
-          columns += "#{col_name}, "
-          v = instance_variable_get(k)
-          if v.is_a?(String) || v.is_a?(Symbol)
-            values += "'#{v}', "
-          elsif v.is_a? Numeric
-            values += "#{v}, "
-          else
-            raise 'Cast exception!'
-          end
-        end
-
-        query = "INSERT INTO #{self.class.class_variable_get("@@table_name")} (#{columns[0...-2]}) VALUES (#{values[0...-2]})"
-        @is_saved = true
-      else
-        where_str = ''
-        instance_variables.reject{|x| x == :@is_saved}.each do |k|
-          col_name = k.to_s.delete('@')
-          v = instance_variable_get(k)
-          if self.class.column_info[k][-1] != 0
-            where_str += "#{col_name} = #{instance_variable_get(k)} AND "
-          elsif v.is_a?(String)
-            columns += "#{col_name} = '#{v}', "
-          elsif v.is_a?(Numeric)
-           # puts "VVV #{v}"
-            columns += "#{col_name} = #{v}, "
-          else 
-            puts "ERROR #{k} VAL: #{v}"
-            raise 'Cast exception!'
-          end
-          #puts columns
-   
-        end
-        query = "UPDATE #{self.class.class_variable_get("@@table_name")} SET #{columns[0...-2]} WHERE #{where_str[0...-5]}"
-      end
-
-      puts query
-
-      Connection.execute(query)
       if @is_saved
-        # повторно объявить инициализацию pk
-        identification = MyOrm::Connection.execute "SELECT last_insert_rowid();"
-        row_info = Connection.execute("SELECT * FROM #{self.class.class_variable_get(:@@table_name)} WHERE rowid = #{identification[0][0]};")
-        pks = self.class.column_info.select{|col,info| info[-1] != 0}
-        #puts "PKS :#{pks}"
-        pks.each_key do |col| i = 0
-          instance_variable_set(col,row_info[0][i])
-          i += 1
-        end
+        save_another_calls
+      else
+        save_first_call
       end
       self
     end
 
+    def save_first_call
+      columns = ''
+      values = ''
+      necessary_fields.each do |k|
+        col_name = k.to_s.delete('@')
+        columns += "#{col_name}, "
+        v = instance_variable_get(k)
+        values += create_the_query_by_types(v,"'#{v}', ", "#{v}, ")
+      end
+
+      query = "INSERT INTO #{self.class.table_name} (#{columns[0...-2]}) VALUES (#{values[0...-2]})"
+      puts query
+      @is_saved = true
+      Connection.execute(query)
+      # повторно объявить инициализацию pk
+      #row_info - метод
+      primary_keys.keys.each_with_index do |col, i|
+        instance_variable_set(col, row_info[0][i])
+        current_primary_keys[col] = instance_variable_get(col)
+      end
+    end
+
+    def save_another_calls
+      where_str = ''
+      columns = ''
+      necessary_fields.each do |k|
+          col_name = k.to_s.delete('@')
+          v = instance_variable_get(k)
+
+          where_str += "#{col_name} = #{current_primary_keys[k]} AND " if self.class.column_info[k][-1] != 0
+
+          columns += create_the_query_by_types(v, "#{col_name} = '#{v}', ", "#{col_name} = #{v}, ")
+        end
+
+        query = "UPDATE #{self.class.table_name} SET #{columns[0...-2]} WHERE #{where_str[0...-5]}"
+        puts query
+        Connection.execute(query)
+
+        primary_keys.keys.each do |col|  
+          current_primary_keys[col] = instance_variable_get(col)
+        end
+    end
+
+    def create_the_query_by_types(val,string_value,numeric_value)
+      if val.is_a?(String)
+        string_value
+      elsif val.is_a? Numeric
+        numeric_value
+      else
+        raise 'Cast exception!'
+      end
+    end
+
+    def row_info
+      identification = MyOrm::Connection.execute "SELECT last_insert_rowid();"
+      Connection.execute("SELECT * FROM #{self.class.table_name} WHERE rowid = #{identification[0][0]};")
+    end
+
+    def primary_keys
+      self.class.column_info.reject{|_, info| info[-1].zero?}
+    end
+
+    def necessary_fields
+      instance_variables.reject{|x| [:@is_saved, :@current_primary_keys].include?(x)}
+    end
+
     def self.populate_students
-      Connection.execute("CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY AUTOINCREMENT, name text NOT NULL, surname text NOT NULL, yr INTEGER NOT NULL);")
-      Connection.execute("INSERT INTO students (name, surname, yr) VALUES ('Константин', 'Шумовский', 3);")
-      Connection.execute("INSERT INTO students (name, surname, yr) VALUES ('Илья', 'Вязников', 3);")
+      Connection.execute("CREATE TABLE IF NOT EXISTS students (id INTEGER,pp INTEGER, name text NOT NULL, surname text NOT NULL, yr INTEGER NOT NULL, PRIMARY KEY(id, pp));")
+      Connection.execute("INSERT INTO students (name, surname, yr, pp,id) VALUES ('Константин', 'Шумовский', 3,5,1);")
+      Connection.execute("INSERT INTO students (name, surname, yr, pp,id) VALUES ('Илья', 'Вязников', 3,5,2);")
     end
 
     def self.show_students
@@ -133,6 +156,5 @@ module MyOrm
         puts row.inspect
       end
     end
-
   end
 end
