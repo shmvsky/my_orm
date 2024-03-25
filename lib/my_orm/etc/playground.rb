@@ -1,48 +1,26 @@
 require_relative '../../my_orm'
 # require 'active_record'
-require 'sqlite3'
+# require 'sqlite3'
 
 #==================================
-db = MyOrm::Connection.establish_connection ':memory:'
 
-db.execute "CREATE TABLE test_tables (foo INTEGER NOT NULL, bar INTEGER NOT NULL, baz TEXT NOT NULL, PRIMARY KEY(foo, bar))"
+MyOrm::Connection.establish_connection ':memory:'
 
-class TestTable < MyOrm::Record
+MyOrm::Record.populate_students
 
-end
+# MyOrm::Record.show_students
 
-tt = TestTable.new
-tt.foo = 1
-tt.bar = 1
-tt.baz = "1 1"
-tt.save
-
-# тут по идее прежняя запись [1,1,"1 1"] должна замениться на [1,2,"1 2"] но нихуя не происходит
-tt.foo = 1
-tt.bar = 2
-tt.baz = "1 2"
-tt.save
-
-db.execute("SELECT * FROM test_tables").each do |row|
-  puts row.to_s
+class Student < MyOrm::Record
 end
 
 
 
-# MyOrm::Record.populate_students
-#
-# MyOrm::Record.show_students
-#
-# class Student < MyOrm::Record
-# end
-#
-# MyOrm::Record.show_students
-# Student.create(name:"NIKITOS",yr:12,surname:"KEKE",id: 21)
-# Student.create(name:"BUSTERENKO",yr:11,surname:"BROWLSTARTS",id: 228)
-# Student.create(name:"BENIS",yr:11,surname:"PENIS")
-# MyOrm::Record.show_students
+stud = Student.create(name:"NIK",surname:"POK",yr:52,id:42,pp:23)
 
-# stud = Student.new 
+Student.where('? >= 2', 'id')
+
+
+# stud = Student.new
 
 
 # stud.name = "gon"
@@ -86,8 +64,8 @@ end
 
 
 
-# puts "======================="
-# MyOrm::Record.show_students
+puts "======================="
+MyOrm::Record.show_students
 
 # student.instance_variable_set(:@id, 228)
 # student.instance_variable_set(:@name, 'Попка')
