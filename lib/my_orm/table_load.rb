@@ -3,7 +3,7 @@ require_relative 'record'
 
 module MyOrm
     # Configuration - модуль, инициализирующий класс-таблицу
-    module Configuration
+    module TableLoad
         def inherited(descendant)
             if Connection.connected?
                 descendant.load_fields
@@ -25,11 +25,12 @@ module MyOrm
                 attr_reader :current_primary_keys,:is_saved
 
                 def initialize 
-                    # СОЗДАНИЕ ПОЛЯ, ДЛЯ ХРАНЕНИЯ ТЕКУЩИХ ЗНАЧЕНИЙ PRIMARY КЛЮЧЕЙ (ИСПОЛЬЗУЕТСЯ, ПРИ ИЗМЕНЕНИИ PRIMARY КЛЮЧЕЙ)
+                    # СОЗДАНИЕ ПОЛЯ, ДЛЯ ХРАНЕНИЯ ТЕКУЩИХ ЗНАЧЕНИЙ PRIMARY КЛЮЧЕЙ (ИСПОЛЬЗУЕТСЯ ПРИ ИЗМЕНЕНИИ PRIMARY КЛЮЧЕЙ)
                     @current_primary_keys = {}
                     # СЛУЖЕБНОЕ ПОЛЕ С ИНФОРМАЦИЕЙ, БЫЛ ЛИ НА ЭКЗЕМПЛЯРЕ ВЫЗВАН МЕТОД SAVE
                     @is_saved = false
                 end
+
             end
 
             # ПОЛУЧАЕМ ИНФУ О ТАБЛИЦЕ
@@ -46,9 +47,6 @@ module MyOrm
                 col_name = '@' + col_info[1]
                 column_info.merge!({col_name.to_sym => col_info})
             end
-
-            # ВЫВОДИМ ИНФУ О ТАБЛИЦЕ ДЕБАГА РАДИ
-            # puts table_info.inspect
 
             # ПЕРЕБИРАЕМ ИНФУ О КОЛОНКАХ ТАБЛИЦЫ
             table_info.each do |col_info|
@@ -67,6 +65,8 @@ module MyOrm
                     instance_variable_set("@#{col_name}", value)
                 end
             end
+
+
 
         end
     end

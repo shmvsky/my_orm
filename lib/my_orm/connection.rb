@@ -1,5 +1,5 @@
 require 'sqlite3'
-require_relative 'configuration.rb'
+require_relative 'table_load.rb'
 require_relative 'record.rb'
 
 module MyOrm

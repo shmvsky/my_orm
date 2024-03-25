@@ -1,4 +1,4 @@
-require_relative 'configuration'
+require_relative 'table_load'
 require_relative 'connection'
 
 class String
@@ -15,7 +15,7 @@ end
 
 module MyOrm
   class Record
-    extend Configuration
+    extend TableLoad
     extend Connection
 
     class << self
@@ -78,6 +78,30 @@ module MyOrm
       end
       self
     end
+
+    def self.where **args
+
+      if args.size == 0
+        WhereChain.new(table_name).take
+      end
+
+    end
+
+    class WhereChain
+
+      def initialize table_name
+        @query = "SELECT * FROM #{table_name}"
+      end
+
+      def take
+        Connection.execute(@query).each do |row|
+          puts row.inspect
+        end
+      end
+
+    end
+
+    private
 
     def save_first_call
       columns = ''
@@ -149,6 +173,13 @@ module MyOrm
       Connection.execute("CREATE TABLE IF NOT EXISTS students (id INTEGER,pp INTEGER, name text NOT NULL, surname text NOT NULL, yr INTEGER NOT NULL, PRIMARY KEY(id, pp));")
       Connection.execute("INSERT INTO students (name, surname, yr, pp,id) VALUES ('Константин', 'Шумовский', 3,5,1);")
       Connection.execute("INSERT INTO students (name, surname, yr, pp,id) VALUES ('Илья', 'Вязников', 3,5,2);")
+    end
+
+    def self.populate_penis
+      Connection.execute("CREATE TABLE IF NOT EXISTS penis (name TEXT, age INTEGER);")
+      Connection.execute("INSERT INTO penis (name, age) VALUES ('Константин', 20);")
+      Connection.execute("INSERT INTO penis (name, age) VALUES ('Илья', 20);")
+      Connection.execute("INSERT INTO penis (name, age) VALUES ('Леонид', 30);")
     end
 
     def self.show_students

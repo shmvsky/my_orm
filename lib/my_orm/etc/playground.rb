@@ -6,18 +6,32 @@ require_relative '../../my_orm'
 
 MyOrm::Connection.establish_connection ':memory:'
 
-MyOrm::Record.populate_students
+# MyOrm::Record.populate_students
 
 # MyOrm::Record.show_students
 
-class Student < MyOrm::Record
+# class Student < MyOrm::Record
+# end
+
+MyOrm::Record.populate_penis
+
+class Peni < MyOrm::Record
 end
 
+Peni.where
+
+# stud = Student.new
+# stud.id = 2
+# stud.pp = 6
+# stud.name = "NIK"
+# stud.surname = "POK"
+# stud.yr = 52
+# stud.save
 
 
-stud = Student.create(name:"NIK",surname:"POK",yr:52,id:42,pp:23)
+# MyOrm::Record.show_students
 
-Student.where('? >= 2', 'id')
+# Student.where('? >= 2', 'id')
 
 
 # stud = Student.new
@@ -64,8 +78,8 @@ Student.where('? >= 2', 'id')
 
 
 
-puts "======================="
-MyOrm::Record.show_students
+# puts "======================="
+# MyOrm::Record.show_students
 
 # student.instance_variable_set(:@id, 228)
 # student.instance_variable_set(:@name, 'Попка')
