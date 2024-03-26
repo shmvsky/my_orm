@@ -6,19 +6,67 @@ require_relative '../../my_orm'
 
 MyOrm::Connection.establish_connection ':memory:'
 
-# MyOrm::Record.populate_students
+MyOrm::Record.populate_students
 
 # MyOrm::Record.show_students
 
-# class Student < MyOrm::Record
-# end
-
-MyOrm::Record.populate_penis
-
-class Peni < MyOrm::Record
+class Student < MyOrm::Record
 end
 
-Peni.where
+# MyOrm::Record.populate_penis
+
+# class Peni < MyOrm::Record
+# end
+
+# Peni.create(name: 'Aboba', age: 228)
+#
+# p = Peni.new(age: 17, name: "Писюнкин")
+# p.save
+
+# Peni.where.each do |p|
+#   puts p.inspect
+# end
+
+# Student.where.each do |s|
+#   s.save
+# end
+
+Student.create(id: 30, pp: 30, name: 'Студент', surname: 'Тестик', yr: 10)
+
+stud = Student.new(args: {id: 31, pp: 31, name: 'test', surname: 'test', yr: 10})
+stud.save
+
+stud2 = Student.new
+stud2.id = 33
+stud2.pp = 33
+stud2.name = 'test2'
+stud2.surname= 'test2'
+stud2.yr = 10
+stud2.save
+
+Student.where.each do |s|
+  s.name = 'Измененный'
+  s.surname = 'Челик'
+  s.save
+end
+
+Student.where.each do |s|
+  puts s.inspect
+end
+
+# puts Peni.where(20, condition: "age = ?")[0].inspect
+
+# puts p.instance_variables.inspect
+
+# def foo(**args)
+#   args.each do |k, v|
+#     puts "#{k}: #{v}"
+#   end
+# end
+#
+# foo(name: "awd", age: 228)
+
+# Peni.where("NAME = ? AND AGE = ?", 'Константин', 20)
 
 # stud = Student.new
 # stud.id = 2

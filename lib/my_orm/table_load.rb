@@ -24,11 +24,19 @@ module MyOrm
             class_eval do 
                 attr_reader :current_primary_keys,:is_saved
 
-                def initialize 
+                def initialize(args: {})
                     # СОЗДАНИЕ ПОЛЯ, ДЛЯ ХРАНЕНИЯ ТЕКУЩИХ ЗНАЧЕНИЙ PRIMARY КЛЮЧЕЙ (ИСПОЛЬЗУЕТСЯ ПРИ ИЗМЕНЕНИИ PRIMARY КЛЮЧЕЙ)
                     @current_primary_keys = {}
                     # СЛУЖЕБНОЕ ПОЛЕ С ИНФОРМАЦИЕЙ, БЫЛ ЛИ НА ЭКЗЕМПЛЯРЕ ВЫЗВАН МЕТОД SAVE
                     @is_saved = false
+
+                    if args.size > 0
+                        args.each do |col,val|
+                            col_name = :"@#{col}"
+                            self.instance_variable_set(col_name, val)
+                        end
+                    end
+
                 end
 
             end

@@ -18,6 +18,9 @@ module MyOrm
     extend TableLoad
     extend Connection
 
+    def initialize(**args)
+    end
+
     class << self
       def create(**args)
         obj = new
@@ -28,15 +31,40 @@ module MyOrm
         obj.save
       end
 
-      # def where(conditions,*param)
-      #   conditions.sub!(/\?/, param.shift) while conditions.include? '?'
+      def where(condition = nil, values = [])
 
-      #   query = "SELECT * from #{table_name} WHERE #{conditions};"
+        query = "SELECT * FROM #{table_name}"
 
-      #   rows = Connection.execute(query)
+        if !condition.nil? && values.size > 0
+          values.each do |val|
+            val = "'#{val}'" if val.is_a? String
+            condition.sub!(/\?/, val.to_s)
+          end
+          query += " WHERE #{condition};"
+        end
 
-      #   instances = rows.inject([]){|res,row| res << row}
-      # end 
+        instances = []
+
+        rows = Connection.execute(query)
+
+        rows.each do |r|
+          instance_args = {}
+          r.each.with_index do |val, idx|
+            instance_args[instance_variables[idx].to_s.delete('@')] = val
+          end
+          inst = new(args: instance_args)
+          inst.saved = true
+
+          inst.primary_keys.keys.each do |col|
+            inst.current_primary_keys[col] = inst.instance_variable_get(col)
+          end
+
+          instances << inst
+        end
+
+        instances
+
+      end
 
       def delete(**args)
         set_of_keys = Set.new(args.keys)
@@ -79,29 +107,13 @@ module MyOrm
       self
     end
 
-    def self.where **args
-
-      if args.size == 0
-        WhereChain.new(table_name).take
-      end
-
+    def saved?
+      @is_saved
     end
 
-    class WhereChain
-
-      def initialize table_name
-        @query = "SELECT * FROM #{table_name}"
-      end
-
-      def take
-        Connection.execute(@query).each do |row|
-          puts row.inspect
-        end
-      end
-
+    def saved=(bool_val)
+      @is_saved = bool_val
     end
-
-    private
 
     def save_first_call
       columns = ''
@@ -110,11 +122,11 @@ module MyOrm
         col_name = k.to_s.delete('@')
         columns += "#{col_name}, "
         v = instance_variable_get(k)
-        values += create_the_query_by_types(v,"'#{v}', ", "#{v}, ")
+        values += "#{prepare_value_for_query(v)}, "
       end
 
       query = "INSERT INTO #{self.class.table_name} (#{columns[0...-2]}) VALUES (#{values[0...-2]})"
-      puts query
+
       @is_saved = true
       Connection.execute(query)
       # повторно объявить инициализацию pk
@@ -134,11 +146,10 @@ module MyOrm
 
           where_str += "#{col_name} = #{current_primary_keys[k]} AND " if self.class.column_info[k][-1] != 0
 
-          columns += create_the_query_by_types(v, "#{col_name} = '#{v}', ", "#{col_name} = #{v}, ")
+          columns += "#{col_name} = #{prepare_value_for_query(v)}, "
         end
 
         query = "UPDATE #{self.class.table_name} SET #{columns[0...-2]} WHERE #{where_str[0...-5]}"
-        puts query
         Connection.execute(query)
 
         primary_keys.keys.each do |col|  
@@ -146,11 +157,11 @@ module MyOrm
         end
     end
 
-    def create_the_query_by_types(val,string_value,numeric_value)
+    def prepare_value_for_query(val)
       if val.is_a?(String)
-        string_value
+        "'#{val}'"
       elsif val.is_a? Numeric
-        numeric_value
+        "#{val}"
       else
         raise 'Cast exception!'
       end
