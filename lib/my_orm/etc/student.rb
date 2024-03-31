@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Student
   @@table_name = 'students'
   @@pk = 'id'
@@ -5,23 +7,22 @@ class Student
   attr_accessor :id, :name, :surname, :yr
 
   def save
-    columns = ""
-    values = ""
+    columns = ''
+    values = ''
 
     instance_variables.each do |k|
       col_name = k.to_s.delete('@')
-      if col_name != @@pk
-        columns += "#{col_name}, "
-        v = instance_variable_get(k)
-        if v.is_a? String || v.is_a? == Symbol
-          values += "'#{v}', "
-        elsif v.is_a? Numeric
-          values += "#{v}, "
-        else
-          raise 'Cast exception!'
-        end
-      end
+      next unless col_name != @@pk
 
+      columns += "#{col_name}, "
+      v = instance_variable_get(k)
+      if v.is_a? String || v.is_a? == Symbol
+        values += "'#{v}', "
+      elsif v.is_a? Numeric
+        values += "#{v}, "
+      else
+        raise 'Cast exception!'
+      end
     end
 
     query = "INSERT INTO #{@@table_name} (#{columns[0...-2]}) VALUES (#{values[0...-2]})"
@@ -46,21 +47,18 @@ class Student
   end
 
   def self.populate_table
-    begin
-      @@db.transaction
-      @@db.execute("CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY AUTOINCREMENT, name text NOT NULL, surname text NOT NULL, yr INTEGER NOT NULL);")
-      @@db.execute("INSERT INTO students (name, surname, yr) VALUES ('Константин', 'Шумовский', 3);")
-      @@db.execute("INSERT INTO students (name, surname, yr) VALUES ('Илья', 'Вязников', 3);")
-      @@db.commit
-    rescue SQLite::Exception
-      @@db.rollback
-    end
+    @@db.transaction
+    @@db.execute('CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY AUTOINCREMENT, name text NOT NULL, surname text NOT NULL, yr INTEGER NOT NULL);')
+    @@db.execute("INSERT INTO students (name, surname, yr) VALUES ('Константин', 'Шумовский', 3);")
+    @@db.execute("INSERT INTO students (name, surname, yr) VALUES ('Илья', 'Вязников', 3);")
+    @@db.commit
+  rescue SQLite::Exception
+    @@db.rollback
   end
 
   def self.show_table_data
-    @@db.execute("SELECT * FROM students").each do |row|
-      puts row.to_s
+    @@db.execute('SELECT * FROM students').each do |row|
+      puts row
     end
   end
-
 end

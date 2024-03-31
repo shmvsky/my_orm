@@ -9,5 +9,4 @@ module MyOrm
   class PopulateException < Exception; end
 
   class ConnectionException < Exception; end
-
 end

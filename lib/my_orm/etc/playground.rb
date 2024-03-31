@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../../my_orm'
 # require 'active_record'
 # require 'sqlite3'
@@ -31,28 +33,6 @@ end
 #   s.save
 # end
 
-Student.create(id: 30, pp: 30, name: 'Студент', surname: 'Тестик', yr: 10)
-
-stud = Student.new(args: {id: 31, pp: 31, name: 'test', surname: 'test', yr: 10})
-stud.save
-
-stud2 = Student.new
-stud2.id = 33
-stud2.pp = 33
-stud2.name = 'test2'
-stud2.surname= 'test2'
-stud2.yr = 10
-stud2.save
-
-Student.where.each do |s|
-  s.name = 'Измененный'
-  s.surname = 'Челик'
-  s.save
-end
-
-Student.where.each do |s|
-  puts s.inspect
-end
 
 # puts Peni.where(20, condition: "age = ?")[0].inspect
 

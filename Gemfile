@@ -12,4 +12,12 @@ gem 'activerecord', '~> 7.1'
 
 gem 'sqlite3', '~> 1.3'
 
-gem 'rubocop', '~> 1'
+group :test do
+  gem 'rspec', '~> 3.10'
+end
+
+group :development do
+  gem 'rubocop', '~> 1'
+  gem 'rubocop-performance', '~> 1.0'
+  gem 'rubocop-rspec', '~> 2'
+end
