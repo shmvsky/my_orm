@@ -7,12 +7,14 @@ RSpec.describe MyOrm::Record do
   before do
     MyOrm::Connection.establish_connection ':memory:'
     MyOrm::Record.populate_students
+
     class Student < MyOrm::Record
     end
   end
 
   after do
     MyOrm::Connection.close_db
+    Object.send(:remove_const, :Student)
   end
 
   def query(id, pp)
@@ -140,11 +142,11 @@ RSpec.describe MyOrm::Record do
       table_from_where = Student.where
 
       args = %i[@id @pp @name @surname @yr]
-      puts "ARGS: #{args}"
+
       table = MyOrm::Connection.execute("SELECT * FROM #{Student.table_name}")
 
       table.zip(table_from_where).each do |r1, r2|
-        args.each_with_index do |col,i|
+        args.each_with_index do |col, i|
           expect(r1[i]).to eq r2.instance_variable_get(col)
         end
       end
@@ -156,14 +158,12 @@ RSpec.describe MyOrm::Record do
       expect { Student.where('id > ? fsa', 2) }.to raise_error SQLite3::SQLException
 
       rows = Student.where('id > ?', 52, 3)
-      # puts "ROWS: #{rows.inspect}"
+
       args = { :@id => 53, :@pp => 553, :@name => 'test2', :@surname => 'test2', :@yr => 3 }
       args.each do |key, val|
         col = rows[0].instance_variable_get(key)
         expect(col).to eq val
       end
-
-      # expect(args.values).to match_array instance_args
     end
   end
 

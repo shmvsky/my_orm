@@ -51,6 +51,12 @@ module MyOrm
         class_variable_get(:@@column_info)
       end
 
+      class_variable_set(:@@associated_tables, {})
+
+      define_singleton_method :associated_tables do
+        class_variable_get(:@@associated_tables)
+      end
+
       table_info.each do |col_info|
         col_name = "@#{col_info[1]}"
         column_info.merge!({ col_name.to_sym => col_info })

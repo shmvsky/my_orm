@@ -2,6 +2,7 @@
 
 require_relative 'table_load'
 require_relative 'connection'
+require_relative 'associations'
 
 class String
   # ruby mutation methods have the expectation to return self if a mutation occurred, nil otherwise. (see http://www.ruby-doc.org/core-1.9.3/String.html#method-i-gsub-21)
@@ -19,6 +20,8 @@ module MyOrm
   class Record
     extend TableLoad
     extend Connection
+    extend Associations
+    include Associations
 
     def initialize(**args); end
 
@@ -45,7 +48,7 @@ module MyOrm
         end
 
         instances = []
-
+        
         rows = Connection.execute(query)
 
         rows.each do |r|
@@ -59,8 +62,6 @@ module MyOrm
           inst.is_saved = true
 
           inst.set_current_primary_keys
-
-
 
           instances << inst
         end
@@ -85,6 +86,13 @@ module MyOrm
         query = "DELETE FROM #{table_name} WHERE " + where_str[0...-5]
 
         Connection.execute(query)
+
+        return if associated_tables.empty?
+
+        associated_tables.each do |table_name, dependent|
+          associated_delete(table_name, dependent, args)
+        end
+
       end
     end
 
@@ -158,10 +166,13 @@ module MyOrm
     end
 
     def prepare_value_for_query(val)
-      if val.is_a?(String)
+      case val
+      when String
         "'#{val}'"
-      elsif val.is_a? Numeric
+      when Numeric
         val.to_s
+      when NilClass
+        'NULL'
       else
         raise 'Cast exception!'
       end
@@ -184,17 +195,45 @@ module MyOrm
       Connection.execute('CREATE TABLE IF NOT EXISTS students (id INTEGER,pp INTEGER, name text NOT NULL, surname text NOT NULL, yr INTEGER NOT NULL, PRIMARY KEY(id, pp));')
       Connection.execute("INSERT INTO students (name, surname, yr, pp,id) VALUES ('Константин', 'Шумовский', 3,5,1);")
       Connection.execute("INSERT INTO students (name, surname, yr, pp,id) VALUES ('Илья', 'Вязников', 3,5,2);")
+
+      Connection.execute('CREATE TABLE IF NOT EXISTS marks (
+        marks_id INTEGER,
+        students_id INTEGER,
+        students_pp INTEGER,
+        mark INTEGER,
+        PRIMARY KEY(marks_id));')
+
+      Connection.execute("INSERT INTO marks (marks_id, students_id, students_pp, mark) VALUES (1,1,5,2);")
+      Connection.execute("INSERT INTO marks (marks_id, students_id, students_pp, mark) VALUES (2,1,5,3);")
+
+      # scholarships
+
+      Connection.execute('CREATE TABLE IF NOT EXISTS scholarships (
+        scholar_id INTEGER,
+        students_id INTEGER,
+        students_pp INTEGER,
+        scholarship INTEGER,
+        PRIMARY KEY(scholar_id));')
+
+      Connection.execute("INSERT INTO scholarships (scholar_id, students_id, students_pp, scholarship) VALUES (1,1,5,2000);")
+      Connection.execute("INSERT INTO scholarships (scholar_id, students_id, students_pp, scholarship) VALUES (2,1,5,3000);")
     end
 
-    def self.populate_penis
-      Connection.execute('CREATE TABLE IF NOT EXISTS penis (name TEXT, age INTEGER);')
-      Connection.execute("INSERT INTO penis (name, age) VALUES ('Константин', 20);")
-      Connection.execute("INSERT INTO penis (name, age) VALUES ('Илья', 20);")
-      Connection.execute("INSERT INTO penis (name, age) VALUES ('Леонид', 30);")
-    end
 
     def self.show_students
       Connection.execute('SELECT * FROM students').each do |row|
+        puts row.inspect
+      end
+    end
+
+    def self.show_marks
+      Connection.execute('SELECT * FROM marks').each do |row|
+        puts row.inspect
+      end
+    end
+
+    def self.show_scholarships
+      Connection.execute('SELECT * FROM scholarships').each do |row|
         puts row.inspect
       end
     end

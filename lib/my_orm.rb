@@ -5,6 +5,7 @@ require_relative 'my_orm/record'
 require_relative 'my_orm/connection'
 require_relative 'my_orm/table_load'
 require_relative 'my_orm/errors'
+require_relative 'my_orm/associations'
 
 module MyOrm
 end

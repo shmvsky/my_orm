@@ -13,7 +13,48 @@ MyOrm::Record.populate_students
 # MyOrm::Record.show_students
 
 class Student < MyOrm::Record
+  has_many :Mark, dependent: :nullify
+  has_many :Scholarship, dependent: :nullify
 end
+
+class Mark < MyOrm::Record
+end
+
+class Scholarship < MyOrm::Record
+end
+
+obj = Student.create(id: 1, pp: 7, name: 'GEG', surname: 'PIP', yr: 62)
+
+mar = obj.marks.create(marks_id: 3, students_id: 1, students_pp: 7, mark: 4)
+Mark.create(marks_id: 4, students_id: 1, students_pp: 7, mark: 5)
+s = obj.scholarships.create(scholar_id: 3, students_id: 1, students_pp: 7, scholarship: 5000)
+Scholarship.create(scholar_id: 4, students_id: 1, students_pp: 7, scholarship: 5000)
+
+
+
+puts '-------------------------------------------'
+MyOrm::Record.show_students
+
+puts '-------------------------------------------'
+MyOrm::Record.show_marks
+
+puts '-------------------------------------------'
+MyOrm::Record.show_scholarships
+
+obj.delete
+
+puts '-------------------------------------------'
+MyOrm::Record.show_students
+
+puts '-------------------------------------------'
+MyOrm::Record.show_marks
+
+puts '-------------------------------------------'
+MyOrm::Record.show_scholarships
+
+
+
+
 
 # MyOrm::Record.populate_penis
 

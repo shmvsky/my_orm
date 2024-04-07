@@ -9,4 +9,10 @@ module MyOrm
   class PopulateException < Exception; end
 
   class ConnectionException < Exception; end
+
+  class DependentException < Exception; end
+
+  class RestrictException < Exception; end
+
+  class TableNameException < Exception; end
 end

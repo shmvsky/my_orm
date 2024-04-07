@@ -20,12 +20,13 @@ RSpec.describe MyOrm::TableLoad do
 
     after do
       MyOrm::Connection.close_db
+      Object.send(:remove_const, :Student)
     end
 
 
 
     it 'calls inherited and looks at the methods' do
-      expected_static_methods = %i[table_name column_info]
+      expected_static_methods = %i[table_name column_info associated_tables]
       expected_instance_methods = %i[is_saved is_saved= current_primary_keys id id= pp pp= name
                                      name= surname surname= yr yr=]
 
